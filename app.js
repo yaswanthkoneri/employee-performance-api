@@ -4,11 +4,19 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const cors = require('cors')
+var LocalStrategy = require('passport-local').Strategy;
+var passport = require('passport');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
+app.use(require('body-parser').urlencoded({ extended: false }));//false
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(cors())
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -42,5 +50,22 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+function getDBString () {
+	return 'mongodb://127.0.0.1:27017/netelixir'
+  }
+  function connect () {
+	console.log('Connecting to netelixir employee database..')
+	var dbString = getDBString()
+	mongoose.connect(dbString, {useNewUrlParser: true})
+  }
+
+  function init () {
+	console.log('connection to mongo successful')
+  }
+  connect()
+  mongoose.connection.on('close', connect)
+  mongoose.connection.on('error', console.error.bind(console, 'connection error:'))
+  mongoose.connection.on('open', init)
 
 module.exports = app;
